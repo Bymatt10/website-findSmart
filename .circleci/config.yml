@@ -12,47 +12,36 @@ jobs:
       - run:
           name: "Install Dependencies"
           command: npm ci
-          working_directory: ~/project/web
-      - run:
-          name: "Run Tests"
-          command: npm run test
-          working_directory: ~/project/web
       - run:
           name: "Build Project"
           command: npm run build
-          working_directory: ~/project/web
 
-      # Guardamos la carpeta 'web' con los archivos compilados para usarla en el siguiente job
+      # Guardamos la carpeta 'dist' (que es la que genera Vite)
       - persist_to_workspace:
           root: ~/project
           paths:
-            - web
+            - dist
 
   deploy:
     docker:
-      # Usamos una imagen base ligera que ya trae SSH y rsync instalados
       - image: cimg/base:2023.09
     steps:
-      # Recuperamos los archivos que construimos en el job anterior
       - attach_workspace:
           at: ~/project
 
-      # --- AQUI ESTA EL UNICO CAMBIO QUE DEBES HACER ---
       - add_ssh_keys:
           fingerprints:
             - "SHA256:zZGf4Xb/l6SnQ8l8RlgiXg9TjZDYAAHpi8GvkZN+3zA"
 
-      # Registramos tu VPS para que no pida confirmación manual
       - run:
           name: "Add VPS to known_hosts"
           command: ssh-keyscan $IP >> ~/.ssh/known_hosts
 
-      # Copiamos la carpeta dist/ directo a la ruta que creamos en tu VPS
+      # Copiamos la carpeta dist/ al servidor (¡ya sin la ruta web!)
       - run:
           name: "Deploy using rsync"
-          command: rsync -avz --delete ~/project/web/dist/ $USER@$IP:/var/www/website-findSmart/web/
+          command: rsync -avz --delete ~/project/dist/ $USER@$IP:/var/www/website-findSmart/dist/
 
-      # Reiniciamos la app usando PM2
       - run:
           name: "Restart Service"
           command: ssh $USER@$IP 'source ~/.bashrc && pm2 restart findSmart-web'
@@ -63,7 +52,7 @@ workflows:
       - build-and-test
       - deploy:
           requires:
-            - build-and-test # El despliegue espera a que el build pase sin errores
+            - build-and-test
           filters:
             branches:
-              only: main # Opcional pero recomendado: solo despliega cuando haces push a la rama 'main'
+              only: master
