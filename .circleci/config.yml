@@ -6,6 +6,7 @@ orbs:
 jobs:
   build-and-test:
     docker:
+      # Imagen estable con Node 22 para evitar errores de crypto
       - image: cimg/node:22.13.1
     steps:
       - checkout
@@ -14,18 +15,11 @@ jobs:
           command: npm ci
       - run:
           name: "Build Project"
-          command: npm run build
-
-      # Verificamos qué carpetas se crearon (útil para debug si vuelve a fallar)
-      - run:
-          name: "List files for debug"
-          command: ls -R
-
-      # CAMBIO AQUÍ: React Router v7 usa la carpeta 'build'
+          command: npm run build # React Router v7
       - persist_to_workspace:
           root: ~/project
           paths:
-            - build
+            - build # Carpeta generada por React Router v7
 
   deploy:
     docker:
@@ -33,23 +27,19 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/project
-
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:zZGf4Xb/l6SnQ8l8RlgiXg9TjZDYAAHpi8GvkZN+3zA"
-
+            - "SHA256:zZGf4Xb/l6SnQ8l8RlgiXg9TjZDYAAHpi8GvkZN+3zA" # Tu huella digital
       - run:
           name: "Add VPS to known_hosts"
           command: ssh-keyscan $IP >> ~/.ssh/known_hosts
-
-      # CAMBIO AQUÍ: Enviamos 'build/' en lugar de 'dist/'
       - run:
           name: "Deploy using rsync"
+          # Sincronizamos la carpeta 'build' directamente a la ruta del VPS
           command: rsync -avz --delete ~/project/build/ $USER@$IP:/var/www/website-findSmart/build/
-
-      # CAMBIO AQUÍ: Si es una SPA, PM2 debe servir la subcarpeta 'client' dentro de 'build'
       - run:
           name: "Restart Service"
+          # Reiniciamos el servicio usando PM2 con el usuario circleci
           command: ssh $USER@$IP 'source ~/.bashrc && pm2 restart findSmart-web'
 
 workflows:
@@ -61,4 +51,4 @@ workflows:
             - build-and-test
           filters:
             branches:
-              only: master
+              only: master # Ajustado a tu rama master
