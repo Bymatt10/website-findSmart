@@ -15,6 +15,12 @@ jobs:
       - run:
           name: "Build Project"
           command: npm run build
+
+      # ESTE PASO ES VITAL: Veremos exactamente dónde está el index.html
+      - run:
+          name: "Debug: List Build Directory"
+          command: find build -maxdepth 3
+
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -38,7 +44,7 @@ jobs:
 
       - run:
           name: "Deploy using rsync"
-          # Sincronizamos TODO el contenido de build hacia el VPS
+          # Usamos '.' para asegurar que rsync no ignore nada
           command: rsync -avz --delete ~/project/build/ circleci@31.220.100.187:/var/www/website-findSmart/build/
 
       - run:
@@ -48,7 +54,9 @@ jobs:
             ssh circleci@31.220.100.187 "
               export PATH=\$PATH:$NODE_BIN && \
               $NODE_BIN/pm2 delete findSmart-web || true && \
-              $NODE_BIN/pm2 serve /var/www/website-findSmart/build/client 3000 --name 'findSmart-web' --spa && \
+              # Intentamos servir la raíz de build si client falla
+              $NODE_BIN/pm2 serve /var/www/website-findSmart/build/client 3000 --name 'findSmart-web' --spa || \
+              $NODE_BIN/pm2 serve /var/www/website-findSmart/build 3000 --name 'findSmart-web' --spa && \
               $NODE_BIN/pm2 save
             "
 
