@@ -37,27 +37,25 @@ jobs:
       - attach_workspace:
           at: ~/project
 
-      # 1. REEMPLAZA ESTO con el fingerprint que te dio CircleCI al guardar la llave privada
+      # --- AQUI ESTA EL UNICO CAMBIO QUE DEBES HACER ---
       - add_ssh_keys:
           fingerprints:
-            - "aa:bb:cc:dd:ee:ff:11:22:33:44:55:66:77:88:99:00"
+            - "SHA256:zZGf4Xb/l6SnQ8l8RlgiXg9TjZDYAAHpi8GvkZN+3zA"
 
-      # Registramos tu VPS (31.220.100.187) para que no pida confirmación manual
+      # Registramos tu VPS para que no pida confirmación manual
       - run:
           name: "Add VPS to known_hosts"
           command: ssh-keyscan $IP >> ~/.ssh/known_hosts
 
-      # 2. REVISAR CARPETA ORIGEN: Aquí asumo que el build se guarda en 'web/dist/'.
-      # Si tu framework usa 'web/build/', cámbialo abajo.
-      # 3. REEMPLAZA RUTA DESTINO: Cambia '/var/www/tu-app/' por la ruta real en tu servidor.
+      # Copiamos la carpeta dist/ directo a la ruta que creamos en tu VPS
       - run:
           name: "Deploy using rsync"
-          command: rsync -avz --delete ~/project/web/dist/ $USER@$IP:/var/www/tu-app/
+          command: rsync -avz --delete ~/project/web/dist/ $USER@$IP:/var/www/website-findSmart/web/
 
-      # 4. REEMPLAZA COMANDO DE REINICIO: Ajusta esto según cómo corra tu app (ej. pm2 restart app)
+      # Reiniciamos la app usando PM2
       - run:
           name: "Restart Service"
-          command: ssh $USER@$IP 'sudo systemctl restart tu-servicio'
+          command: ssh $USER@$IP 'source ~/.bashrc && pm2 restart findSmart-web'
 
 workflows:
   test-build-deploy:
