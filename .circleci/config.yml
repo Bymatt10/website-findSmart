@@ -26,29 +26,25 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/project
-
-      # SOLUCIÓN AL ERROR 127: Instalamos rsync en el contenedor de CircleCI
       - run:
           name: "Install rsync"
           command: sudo apt-get update && sudo apt-get install -y rsync
-
       - add_ssh_keys:
           fingerprints:
             - "SHA256:zZGf4Xb/l6SnQ8l8RlgiXg9TjZDYAAHpi8GvkZN+3zA"
-
       - run:
           name: "Add VPS to known_hosts"
           command: ssh-keyscan 31.220.100.187 >> ~/.ssh/known_hosts
-
       - run:
           name: "Deploy using rsync"
           command: rsync -avz --delete ~/project/build/ circleci@31.220.100.187:/var/www/website-findSmart/build/
 
+      # REPARACIÓN DEFINITIVA: Usando rutas absolutas para Node y PM2
       - run:
           name: "Restart or Start Service"
           command: |
-            ssh circleci@31.220.100.187 'source ~/.bashrc && pm2 restart findSmart-web || pm2 serve /var/www/website-findSmart/build/client 3000 --name "findSmart-web" --spa'
-            ssh circleci@31.220.100.187 'source ~/.bashrc && pm2 save'
+            ssh circleci@31.220.100.187 'export PATH=$PATH:/home/circleci/.nvm/versions/node/v22.22.1/bin && /home/circleci/.nvm/versions/node/v22.22.1/bin/pm2 restart findSmart-web || /home/circleci/.nvm/versions/node/v22.22.1/bin/pm2 serve /var/www/website-findSmart/build/client 3000 --name "findSmart-web" --spa'
+            ssh circleci@31.220.100.187 'export PATH=$PATH:/home/circleci/.nvm/versions/node/v22.22.1/bin && /home/circleci/.nvm/versions/node/v22.22.1/bin/pm2 save'
 
 workflows:
   test-build-deploy:
