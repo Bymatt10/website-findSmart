@@ -1,0 +1,29 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.1.0
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/node:20.11.1
+    steps:
+      - checkout
+      # Si el código de la app está en la carpeta 'web'
+      - run:
+          name: "Install Dependencies"
+          command: npm ci
+          working_directory: ~/project/web
+      - run:
+          name: "Run Tests"
+          command: npm run test
+          working_directory: ~/project/web
+      - run:
+          name: "Build Project"
+          command: npm run build
+          working_directory: ~/project/web
+
+workflows:
+  test-and-build:
+    jobs:
+      - build-and-test

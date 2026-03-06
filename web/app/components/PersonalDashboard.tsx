@@ -33,7 +33,7 @@ export function PersonalDashboard({ onAddTransaction }: { onAddTransaction: () =
         <div className="flex flex-col h-full">
             {/* Hero */}
             <div
-                className="px-6 pb-7 pt-8 rounded-b-3xl"
+                className="px-6 pb-9 pt-10 rounded-b-[2.5rem] shadow-sm"
                 style={{ background: 'linear-gradient(135deg, #4338ca, #7c3aed, #6d28d9)' }}
             >
                 <div className="flex justify-between items-center mb-1">
@@ -49,9 +49,9 @@ export function PersonalDashboard({ onAddTransaction }: { onAddTransaction: () =
                     </button>
                 </div>
 
-                <div className="mt-3 mb-5">
-                    <p className="text-indigo-200/60 text-xs mb-0.5">Balance</p>
-                    <p className="text-white text-4xl font-black tracking-tight">
+                <div className="mt-4 mb-6">
+                    <p className="text-indigo-200/60 text-sm mb-1">Balance Total</p>
+                    <p className="text-white text-[2.75rem] leading-none font-black tracking-tight drop-shadow-sm">
                         {currencyDisplay === 'USD' ? '$' : 'C$'}{formatAmount(Math.abs(totalBalance))}
                     </p>
                 </div>
@@ -82,9 +82,9 @@ export function PersonalDashboard({ onAddTransaction }: { onAddTransaction: () =
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto pb-24">
                 {/* Quick Actions */}
-                <div className="flex justify-between mx-5 mt-6 mb-6">
+                <div className="flex justify-between mx-6 mt-8 mb-8">
                     {[
                         { label: 'Registrar', Icon: Plus, to: '#', onClick: onAddTransaction },
                         { label: 'Categorías', Icon: LayoutGrid, to: '/perfil' },
@@ -93,17 +93,17 @@ export function PersonalDashboard({ onAddTransaction }: { onAddTransaction: () =
                     ].map((action, idx) => (
                         action.onClick ? (
                             <button key={idx} onClick={action.onClick} className="flex flex-col items-center group">
-                                <div className="w-14 h-14 bg-indigo-600/15 border border-indigo-500/25 rounded-2xl flex items-center justify-center mb-2 group-hover:bg-indigo-600/25 transition-colors">
-                                    <action.Icon size={22} className="text-indigo-400" />
+                                <div className="w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center justify-center mb-2.5 shadow-sm group-hover:border-indigo-500/50 group-hover:shadow-md transition-all">
+                                    <action.Icon size={24} className="text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
                                 </div>
-                                <span className="text-zinc-400 text-[10px] font-medium">{action.label}</span>
+                                <span className="text-zinc-600 dark:text-zinc-400 text-xs font-semibold">{action.label}</span>
                             </button>
                         ) : (
                             <Link key={idx} to={action.to!} className="flex flex-col items-center group">
-                                <div className="w-14 h-14 bg-indigo-600/15 border border-indigo-500/25 rounded-2xl flex items-center justify-center mb-2 group-hover:bg-indigo-600/25 transition-colors">
-                                    <action.Icon size={22} className="text-indigo-400" />
+                                <div className="w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center justify-center mb-2.5 shadow-sm group-hover:border-indigo-500/50 group-hover:shadow-md transition-all">
+                                    <action.Icon size={24} className="text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
                                 </div>
-                                <span className="text-zinc-400 text-[10px] font-medium">{action.label}</span>
+                                <span className="text-zinc-600 dark:text-zinc-400 text-xs font-semibold">{action.label}</span>
                             </Link>
                         )
                     ))}
@@ -111,23 +111,23 @@ export function PersonalDashboard({ onAddTransaction }: { onAddTransaction: () =
 
                 {/* Active Goals */}
                 {activeGoals.length > 0 && (
-                    <div className="mb-6">
-                        <div className="flex justify-between items-center mx-5 mb-3">
-                            <p className="text-white font-bold text-base">Mis Metas</p>
-                            <Link to="/goals" className="text-indigo-400 text-xs font-medium hover:text-indigo-300">
+                    <div className="mb-8">
+                        <div className="flex justify-between items-center mx-6 mb-4">
+                            <p className="text-zinc-900 dark:text-white font-bold text-lg">Mis Metas</p>
+                            <Link to="/goals" className="text-indigo-600 dark:text-indigo-400 text-sm font-semibold hover:text-indigo-700 dark:hover:text-indigo-300">
                                 Ver Todas
                             </Link>
                         </div>
-                        <div className="flex gap-3 px-5 overflow-x-auto pb-2">
+                        <div className="flex gap-4 px-6 overflow-x-auto pb-4 hide-scrollbar">
                             {activeGoals.slice(0, 4).map((goal) => {
                                 const progress = Math.min((goal.current_amount / goal.target_amount) * 100, 100);
                                 const currSymbol = goal.target_currency === 'USD' ? '$' : 'C$';
                                 return (
-                                    <div key={goal.id} className="w-40 flex-shrink-0 bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4">
-                                        <div className="w-9 h-9 bg-indigo-500/15 rounded-xl flex items-center justify-center mb-3">
-                                            <Target size={18} className="text-indigo-400" />
+                                    <div key={goal.id} className="w-44 flex-shrink-0 bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
+                                        <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/15 rounded-xl flex items-center justify-center mb-4">
+                                            <Target size={20} className="text-indigo-600 dark:text-indigo-400" />
                                         </div>
-                                        <p className="text-white text-sm font-semibold mb-0.5 truncate">{goal.title}</p>
+                                        <p className="text-zinc-900 dark:text-white text-[15px] font-bold mb-1 truncate">{goal.title}</p>
                                         <p className="text-zinc-500 text-[10px] mb-3">
                                             Meta: {currSymbol}{Number(goal.target_amount).toLocaleString()}
                                         </p>
@@ -143,14 +143,14 @@ export function PersonalDashboard({ onAddTransaction }: { onAddTransaction: () =
                 )}
 
                 {/* Recent Transactions */}
-                <div className="mx-5 mb-8">
-                    <div className="flex justify-between items-center mb-3">
-                        <p className="text-white font-bold text-base">Últimos Movimientos</p>
-                        <Link to="/transactions" className="text-indigo-400 text-xs font-medium hover:text-indigo-300">
+                <div className="mx-6 mb-8">
+                    <div className="flex justify-between items-center mb-4">
+                        <p className="text-zinc-900 dark:text-white font-bold text-lg">Últimos Movimientos</p>
+                        <Link to="/transactions" className="text-indigo-600 dark:text-indigo-400 text-sm font-semibold hover:text-indigo-700 dark:hover:text-indigo-300">
                             Ver todos
                         </Link>
                     </div>
-                    <div className="bg-zinc-900/50 rounded-2xl px-4 border border-zinc-800/50">
+                    <div className="bg-white dark:bg-zinc-900/50 rounded-2xl px-5 border border-zinc-200 dark:border-zinc-800/50 shadow-sm">
                         {transactions.length === 0 && !isLoading ? (
                             <p className="text-zinc-500 text-center py-8">No hay movimientos recientes.</p>
                         ) : (

@@ -3,6 +3,7 @@ import { Outlet, useNavigate, NavLink } from 'react-router';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/auth.store';
 import { useBusinessStore } from '../stores/business.store';
+import { ThemeToggle } from '../components/ThemeToggle';
 import {
     LayoutDashboard, List, Target, Sparkles, MessageCircle, User, Briefcase, Menu, X, LogOut,
 } from 'lucide-react';
@@ -48,10 +49,10 @@ export default function AppLayout() {
     }
 
     const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
-        <aside className={`${mobile ? 'flex' : 'hidden lg:flex'} flex-col w-64 bg-zinc-900/60 border-r border-zinc-800/50 min-h-screen py-6 px-4`}>
+        <aside className={`${mobile ? 'flex' : 'hidden lg:flex'} flex-col w-64 bg-white dark:bg-zinc-900/60 border-r border-zinc-200 dark:border-zinc-800/50 min-h-screen py-6 px-4`}>
             {/* Logo */}
             <div className="mb-8 px-2">
-                <h1 className="text-2xl font-black text-white tracking-tight">FinSmart</h1>
+                <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">FinSmart</h1>
                 <p className="text-zinc-500 text-xs mt-0.5">Inteligencia financiera</p>
             </div>
 
@@ -66,7 +67,7 @@ export default function AppLayout() {
                         className={({ isActive }) =>
                             `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
                                 ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
+                                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-white'
                             }`
                         }
                     >
@@ -76,24 +77,29 @@ export default function AppLayout() {
                 ))}
             </nav>
 
+            {/* Theme Toggle */}
+            <div className="mt-8 mb-4 px-2">
+                <ThemeToggle />
+            </div>
+
             {/* Business Mode Toggle */}
-            <div className="mt-6 bg-zinc-900/50 rounded-2xl px-4 py-4 border border-zinc-800/50">
+            <div className="mt-2 bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl px-4 py-4 border border-zinc-200 dark:border-zinc-800/50">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-500/10">
-                            <Briefcase size={16} className="text-emerald-400" />
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-500/10 dark:bg-emerald-500/20">
+                            <Briefcase size={16} className="text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div>
-                            <p className="text-white text-sm font-medium">Emprendedor</p>
-                            <p className="text-zinc-500 text-[10px]">Modo negocio</p>
+                            <p className="text-zinc-900 dark:text-white text-sm font-medium">Emprendedor</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-[10px]">Modo negocio</p>
                         </div>
                     </div>
                     <button
                         onClick={() => setBusinessModeActive(!isBusinessModeActive)}
-                        className={`relative w-10 h-6 rounded-full transition-colors ${isBusinessModeActive ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+                        className={`relative w-11 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${isBusinessModeActive ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'}`}
                     >
                         <span
-                            className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${isBusinessModeActive ? 'translate-x-5' : 'translate-x-1'}`}
+                            className={`absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out ${isBusinessModeActive ? 'translate-x-5' : 'translate-x-0'}`}
                         />
                     </button>
                 </div>
@@ -102,7 +108,7 @@ export default function AppLayout() {
             {/* Logout */}
             <button
                 onClick={() => supabase.auth.signOut()}
-                className="mt-3 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors w-full"
+                className="mt-3 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors w-full"
             >
                 <LogOut size={18} />
                 Cerrar Sesión
@@ -111,7 +117,7 @@ export default function AppLayout() {
     );
 
     return (
-        <div className="flex min-h-screen bg-zinc-950">
+        <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
             {/* Desktop sidebar */}
             <Sidebar />
 
@@ -131,11 +137,11 @@ export default function AppLayout() {
             {/* Main content */}
             <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
                 {/* Mobile topbar */}
-                <div className="lg:hidden flex items-center justify-between px-5 py-4 border-b border-zinc-800/50">
+                <div className="lg:hidden flex items-center justify-between px-5 py-4 border-b border-zinc-200 dark:border-zinc-800/50">
                     <button onClick={() => setSidebarOpen(true)}>
-                        <Menu size={24} className="text-white" />
+                        <Menu size={24} className="text-zinc-900 dark:text-white" />
                     </button>
-                    <h1 className="text-white font-bold text-lg">FinSmart</h1>
+                    <h1 className="text-zinc-900 dark:text-white font-bold text-lg">FinSmart</h1>
                     <div className="w-6" />
                 </div>
 

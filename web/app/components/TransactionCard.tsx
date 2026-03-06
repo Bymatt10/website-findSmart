@@ -34,7 +34,7 @@ export function TransactionCard({ transaction, onEdit, onDelete }: TransactionCa
     const currSymbol = transaction.original_currency === 'USD' ? '$' : 'C$';
 
     return (
-        <div className="flex items-center py-4 border-b border-zinc-800/50">
+        <div className="flex items-center py-4 border-b border-zinc-200 dark:border-zinc-800/50">
             {/* Icon */}
             <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center mr-4 flex-shrink-0"
@@ -45,13 +45,13 @@ export function TransactionCard({ transaction, onEdit, onDelete }: TransactionCa
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-[15px] truncate">{transaction.name}</p>
+                <p className="text-zinc-900 dark:text-white font-semibold text-[15px] truncate">{transaction.name}</p>
                 <p className="text-zinc-500 text-xs mt-0.5">{transaction.category}</p>
             </div>
 
             {/* Amount & actions */}
             <div className="flex flex-col items-end ml-2">
-                <span className={`font-bold text-[15px] ${isExpense ? 'text-white' : 'text-emerald-400'}`}>
+                <span className={`font-bold text-[15px] ${isExpense ? 'text-zinc-900 dark:text-white' : 'text-emerald-600 dark:text-emerald-400'}`}>
                     {isExpense ? '-' : '+'}{currSymbol}{Math.abs(transaction.amount).toFixed(2)}
                 </span>
                 <div className="flex items-center gap-1 mt-1.5">
