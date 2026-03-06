@@ -6,7 +6,7 @@ orbs:
 jobs:
   build-and-test:
     docker:
-      - image: cimg/node:20.11.1
+      - image: cimg/node:22.13.1
     steps:
       - checkout
       - run:
