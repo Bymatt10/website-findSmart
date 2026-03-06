@@ -1,12 +1,13 @@
 version: 2.1
 
+# Usamos el Orb de Node para facilitar la gestión de versiones si fuera necesario
 orbs:
   node: circleci/node@5.1.0
 
 jobs:
   build-and-test:
     docker:
-      # Imagen estable con Node 22 para evitar errores de crypto
+      # Usamos Node 22 para evitar el error de 'crypto.hash' en Vite/React Router v7
       - image: cimg/node:22.13.1
     steps:
       - checkout
@@ -15,11 +16,13 @@ jobs:
           command: npm ci
       - run:
           name: "Build Project"
-          command: npm run build # React Router v7
+          command: npm run build
+
+      # Guardamos la carpeta 'build' para que esté disponible en el siguiente job
       - persist_to_workspace:
           root: ~/project
           paths:
-            - build # Carpeta generada por React Router v7
+            - build
 
   deploy:
     docker:
@@ -27,20 +30,28 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/project
+
+      # Añadimos tu llave SSH usando el Fingerprint que proporcionaste
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:zZGf4Xb/l6SnQ8l8RlgiXg9TjZDYAAHpi8GvkZN+3zA" # Tu huella digital
+            - "SHA256:zZGf4Xb/l6SnQ8l8RlgiXg9TjZDYAAHpi8GvkZN+3zA"
+
+      # Agregamos tu VPS a los hosts conocidos para que la conexión no sea interactiva
       - run:
           name: "Add VPS to known_hosts"
-          command: ssh-keyscan $IP >> ~/.ssh/known_hosts
+          command: ssh-keyscan 31.220.100.187 >> ~/.ssh/known_hosts
+
+      # Sincronizamos los archivos compilados hacia la carpeta segura en tu VPS
       - run:
           name: "Deploy using rsync"
-          # Sincronizamos la carpeta 'build' directamente a la ruta del VPS
-          command: rsync -avz --delete ~/project/build/ $USER@$IP:/var/www/website-findSmart/build/
+          command: rsync -avz --delete ~/project/build/ circleci@31.220.100.187:/var/www/website-findSmart/build/
+
+      # Reiniciamos la app en PM2. Si no existe (primera vez), la iniciamos.
       - run:
-          name: "Restart Service"
-          # Reiniciamos el servicio usando PM2 con el usuario circleci
-          command: ssh $USER@$IP 'source ~/.bashrc && pm2 restart findSmart-web'
+          name: "Restart or Start Service"
+          command: |
+            ssh circleci@31.220.100.187 'source ~/.bashrc && pm2 restart findSmart-web || pm2 serve /var/www/website-findSmart/build/client 3000 --name "findSmart-web" --spa'
+            ssh circleci@31.220.100.187 'source ~/.bashrc && pm2 save'
 
 workflows:
   test-build-deploy:
@@ -51,4 +62,4 @@ workflows:
             - build-and-test
           filters:
             branches:
-              only: master # Ajustado a tu rama master
+              only: master # Configurado para tu rama principal
