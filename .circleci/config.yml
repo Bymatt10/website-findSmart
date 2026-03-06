@@ -9,7 +9,6 @@ jobs:
       - image: cimg/node:20.11.1
     steps:
       - checkout
-      # Si el código de la app está en la carpeta 'web'
       - run:
           name: "Install Dependencies"
           command: npm ci
@@ -23,7 +22,50 @@ jobs:
           command: npm run build
           working_directory: ~/project/web
 
+      # Guardamos la carpeta 'web' con los archivos compilados para usarla en el siguiente job
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - web
+
+  deploy:
+    docker:
+      # Usamos una imagen base ligera que ya trae SSH y rsync instalados
+      - image: cimg/base:2023.09
+    steps:
+      # Recuperamos los archivos que construimos en el job anterior
+      - attach_workspace:
+          at: ~/project
+
+      # 1. REEMPLAZA ESTO con el fingerprint que te dio CircleCI al guardar la llave privada
+      - add_ssh_keys:
+          fingerprints:
+            - "aa:bb:cc:dd:ee:ff:11:22:33:44:55:66:77:88:99:00"
+
+      # Registramos tu VPS (31.220.100.187) para que no pida confirmación manual
+      - run:
+          name: "Add VPS to known_hosts"
+          command: ssh-keyscan $IP >> ~/.ssh/known_hosts
+
+      # 2. REVISAR CARPETA ORIGEN: Aquí asumo que el build se guarda en 'web/dist/'.
+      # Si tu framework usa 'web/build/', cámbialo abajo.
+      # 3. REEMPLAZA RUTA DESTINO: Cambia '/var/www/tu-app/' por la ruta real en tu servidor.
+      - run:
+          name: "Deploy using rsync"
+          command: rsync -avz --delete ~/project/web/dist/ $USER@$IP:/var/www/tu-app/
+
+      # 4. REEMPLAZA COMANDO DE REINICIO: Ajusta esto según cómo corra tu app (ej. pm2 restart app)
+      - run:
+          name: "Restart Service"
+          command: ssh $USER@$IP 'sudo systemctl restart tu-servicio'
+
 workflows:
-  test-and-build:
+  test-build-deploy:
     jobs:
       - build-and-test
+      - deploy:
+          requires:
+            - build-and-test # El despliegue espera a que el build pase sin errores
+          filters:
+            branches:
+              only: main # Opcional pero recomendado: solo despliega cuando haces push a la rama 'main'
