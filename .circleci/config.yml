@@ -38,17 +38,16 @@ jobs:
 
       - run:
           name: "Deploy using rsync"
+          # El punto '.' al final de la ruta origen asegura que se copie TODO el contenido
           command: rsync -avz --delete ~/project/build/ circleci@31.220.100.187:/var/www/website-findSmart/build/
 
       - run:
           name: "Restart or Start Service"
           command: |
-            # Definimos la ruta donde residen node y pm2
             NODE_BIN=/home/circleci/.nvm/versions/node/v22.22.1/bin
-
             ssh circleci@31.220.100.187 "
               export PATH=\$PATH:$NODE_BIN && \
-              $NODE_BIN/pm2 restart findSmart-web || \
+              $NODE_BIN/pm2 delete findSmart-web || true && \
               $NODE_BIN/pm2 serve /var/www/website-findSmart/build/client 3000 --name 'findSmart-web' --spa && \
               $NODE_BIN/pm2 save
             "
