@@ -16,11 +16,16 @@ jobs:
           name: "Build Project"
           command: npm run build
 
-      # Guardamos la carpeta 'dist' (que es la que genera Vite)
+      # Verificamos qué carpetas se crearon (útil para debug si vuelve a fallar)
+      - run:
+          name: "List files for debug"
+          command: ls -R
+
+      # CAMBIO AQUÍ: React Router v7 usa la carpeta 'build'
       - persist_to_workspace:
           root: ~/project
           paths:
-            - dist
+            - build
 
   deploy:
     docker:
@@ -37,11 +42,12 @@ jobs:
           name: "Add VPS to known_hosts"
           command: ssh-keyscan $IP >> ~/.ssh/known_hosts
 
-      # Copiamos la carpeta dist/ al servidor (¡ya sin la ruta web!)
+      # CAMBIO AQUÍ: Enviamos 'build/' en lugar de 'dist/'
       - run:
           name: "Deploy using rsync"
-          command: rsync -avz --delete ~/project/dist/ $USER@$IP:/var/www/website-findSmart/dist/
+          command: rsync -avz --delete ~/project/build/ $USER@$IP:/var/www/website-findSmart/build/
 
+      # CAMBIO AQUÍ: Si es una SPA, PM2 debe servir la subcarpeta 'client' dentro de 'build'
       - run:
           name: "Restart Service"
           command: ssh $USER@$IP 'source ~/.bashrc && pm2 restart findSmart-web'
