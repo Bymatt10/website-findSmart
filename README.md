@@ -44,15 +44,28 @@ npm run build
 
 ## Deployment
 
-### Docker Deployment
+### Jenkins Pipeline Deployment
 
-To build and run using Docker:
+El proyecto incluye un `Jenkinsfile` configurado para automatizar el despliegue con Docker y gestionar de forma segura las variables de entorno.
+
+**Requisitos Previos en Jenkins:**
+1. Instalar el plugin de [Credentials Binding](https://plugins.jenkins.io/credentials-binding/).
+2. Crear una credencial de tipo **"Secret file"** con el ID `findsmart-env` y subir el archivo `.env` de producción.
+3. Asegurarse de tener Docker instalado y que el usuario de Jenkins tenga permisos para ejecutarlo (`usermod -aG docker jenkins`).
+
+El pipeline automatizará los siguientes pasos:
+- Obtendrá el código fuente.
+- Inyectará de forma segura el archivo `.env` para la compilación y ejecución.
+- Construirá la imagen de Docker.
+- Desplegará la aplicación en el puerto **8000**.
+
+### Docker Compose Deployment
+
+To build and run the application along with Redis using Docker Compose manually:
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+# Run the application and Redis together (Make sure you have your .env file ready)
+docker compose up -d --build
 ```
 
 The containerized application can be deployed to any platform that supports Docker, including:

@@ -1,0 +1,28 @@
+services:
+  app:
+    build: .
+    image: findsmart-web:latest
+    container_name: findsmart-app
+    ports:
+      - "${PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      # Sobrescribimos REDIS_HOST para que apunte al contenedor de Redis en la red interna de Docker
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: findsmart-redis
+    ports:
+      - "6379:6379" # Opcional: expone redis al host si lo necesitas para debug externo
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
