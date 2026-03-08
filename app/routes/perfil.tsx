@@ -111,7 +111,7 @@ export default function PerfilPage() {
                         <div><p className="font-medium text-[15px] text-white">Modo Emprendedor</p><p className="text-zinc-500 text-xs">Activa la sección para tu negocio</p></div>
                     </div>
                     <button onClick={() => setBusinessModeActive(!isBusinessModeActive)} className={`relative w-12 h-7 rounded-full transition-colors flex-shrink-0 ${isBusinessModeActive ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
-                        <span className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${isBusinessModeActive ? 'translate-x-6' : 'translate-x-1'}`} />
+                        <span className={`absolute left-0 top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${isBusinessModeActive ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
                 </div>
             </div>
