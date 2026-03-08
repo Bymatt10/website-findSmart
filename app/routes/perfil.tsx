@@ -1,11 +1,36 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import type { MetaFunction } from 'react-router';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../stores/auth.store';
 import { useBusinessStore } from '../stores/business.store';
 import { useWalletsStore } from '../stores/wallets.store';
 import { useCategoriesStore } from '../stores/categories.store';
 import { Wallet, LayoutGrid, Target, MessageCircle, LogOut, ChevronRight, Briefcase, Plus, X, CreditCard, Landmark, Banknote, PiggyBank, Pencil, Trash2 } from 'lucide-react';
+
+export const meta: MetaFunction = () => {
+    return [
+        { title: "Perfil y Configuración | FindSmart" },
+        { name: "description", content: "Administra tu perfil, cuentas bancarias, billeteras y configuración en FindSmart." },
+
+        // WhatsApp / Instagram / Facebook / Discord (Open Graph)
+        { property: "og:site_name", content: "FindSmart" },
+        { property: "og:title", content: "Perfil y Configuración | FindSmart" },
+        { property: "og:description", content: "Gestiona todas tus finanzas, billeteras y preferencias en FindSmart." },
+        { property: "og:type", content: "website" },
+        // WhatsApp y Discord extraen gran valor de una imagen de previsualización (og:image)
+        { property: "og:image", content: "https://budget.domify.app/login" }, // IMPORTANTE: Cambia a la URL de un logo/imagen real
+
+        // Twitter / X (También usado por Discord para mostrar la versión "grande" de la imagen)
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: "Perfil y Configuración | FindSmart" },
+        { name: "twitter:description", content: "Administra tu perfil, cuentas y billeteras en FindSmart." },
+        { name: "twitter:image", content: "https://budget.domify.app/login" }, // Igual aquí, usa URL real de tu imagen
+
+        // Theme Color (muy usado por Discord para dar color al borde del panel incrustado)
+        { name: "theme-color", content: "#4f46e5" } // Este es el indigo-600 que estás usando en la UI
+    ];
+};
 
 const BANKS_LIST = ['BAC', 'Lafise', 'Banpro', 'Ficohsa', 'Avanz', 'BDF', 'Efectivo', 'Otro'];
 const BANK_COLORS: Record<string, string> = { BAC: '#dc2626', Lafise: '#16a34a', Banpro: '#059669', Ficohsa: '#2563eb', Avanz: '#ea580c', BDF: '#0284c7', Efectivo: '#818cf8', Otro: '#71717a' };
@@ -115,7 +140,7 @@ export default function PerfilPage() {
                                     <h3 className="text-white font-bold">{editingWalletId ? 'Editar Cuenta' : 'Nueva Cuenta'}</h3>
                                     <div className="grid grid-cols-4 gap-1">
                                         {[{ v: 'debit', l: 'Débito' }, { v: 'savings', l: 'Ahorro' }, { v: 'credit_card', l: 'Crédito' }, { v: 'cash', l: 'Efectivo' }].map(({ v, l }) => (
-                                            <button key={v} type="button" onClick={() => setWalletType(v as any)} className={`py-2 rounded-lg text-xs font-bold border ${walletType === v ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-400'}`}>{l}</button>
+                                            <button key={v} type="button" onClick={() => setWalletType(v as any)} className={`py-2 rounded-lg text-xs font-bold border flex-shrink-0 ${walletType === v ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-400'}`}>{l}</button>
                                         ))}
                                     </div>
                                     {walletType !== 'cash' && (
@@ -180,7 +205,7 @@ export default function PerfilPage() {
                         <div className="p-5">
                             <form onSubmit={handleAddCategory} className="flex gap-2 mb-5">
                                 <input required placeholder="Nueva categoría" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} className="flex-1 h-11 bg-zinc-900 rounded-xl px-4 text-white border border-zinc-800 focus:border-indigo-500 focus:outline-none placeholder-zinc-600" />
-                                <button type="submit" className="h-11 px-4 bg-indigo-600 rounded-xl text-white font-bold hover:bg-indigo-500 transition-colors flex items-center gap-1"><Plus size={16} /> Añadir</button>
+                                <button type="submit" className="h-11 px-4 bg-indigo-600 rounded-xl text-white font-bold hover:bg-indigo-500 transition-colors flex items-center flex-shrink-0 gap-1"><Plus size={16} /> Añadir</button>
                             </form>
                             <div className="space-y-2">
                                 {categories.map((cat) => (
