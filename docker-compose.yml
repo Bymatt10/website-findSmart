@@ -1,14 +1,15 @@
+version: '3.8'
+
 services:
   web:
     build: .
     image: findsmart-web:latest
     container_name: findsmart-app
     ports:
-      - "3000:8000" # Mapea el puerto 3000 para que NPM lo vea
+      - "3000:8000" # Mapea el puerto 3000 para que Nginx Proxy Manager lo vea
     env_file:
-      - .env  # <--- ESTO ES VITAL
+      - .env
     environment:
-      # Sobrescribimos REDIS_HOST para que apunte al contenedor de Redis en la red interna de Docker
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     restart: always
@@ -18,8 +19,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: findsmart-redis
-    ports:
-      - "6379:6379" # Opcional: expone redis al host si lo necesitas para debug externo
+    # ELIMINAMOS O COMENTAMOS LOS PORTS PARA EVITAR EL ERROR "PORT ALREADY ALLOCATED"
+    # ports:
+    #   - "6379:6379" 
     restart: unless-stopped
     volumes:
       - redis_data:/data
