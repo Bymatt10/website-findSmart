@@ -1,17 +1,17 @@
 services:
-  app:
+  web:
     build: .
     image: findsmart-web:latest
     container_name: findsmart-app
     ports:
-      - "${PORT:-8000}:8000"
+      - "3000:8000" # Mapea el puerto 3000 para que NPM lo vea
     env_file:
-      - .env
+      - .env  # <--- ESTO ES VITAL
     environment:
       # Sobrescribimos REDIS_HOST para que apunte al contenedor de Redis en la red interna de Docker
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    restart: unless-stopped
+    restart: always
     depends_on:
       - redis
 
