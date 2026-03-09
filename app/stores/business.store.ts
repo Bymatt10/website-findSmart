@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { apiClient } from '../services/api';
 
 export interface BusinessTransaction {
@@ -32,19 +33,21 @@ interface BusinessState {
     setBusinessModeActive: (val: boolean) => void;
 }
 
-export const useBusinessStore = create<BusinessState>((set) => ({
-    transactions: [],
-    stats: {
-        totalInvested: 0,
-        totalSold: 0,
-        netProfit: 0,
-        inventoryValue: 0,
-        profitByMonth: {},
-    },
-    isLoading: false,
-    isBusinessModeActive: false,
+export const useBusinessStore = create<BusinessState>()(
+    persist(
+        (set) => ({
+            transactions: [],
+            stats: {
+                totalInvested: 0,
+                totalSold: 0,
+                netProfit: 0,
+                inventoryValue: 0,
+                profitByMonth: {},
+            },
+            isLoading: false,
+            isBusinessModeActive: false,
 
-    setBusinessModeActive: (val: boolean) => set({ isBusinessModeActive: val }),
+            setBusinessModeActive: (val: boolean) => set({ isBusinessModeActive: val }),
 
     fetchAll: async () => {
         set({ isLoading: true });
@@ -57,20 +60,25 @@ export const useBusinessStore = create<BusinessState>((set) => ({
         }
     },
 
-    fetchStats: async () => {
-        try {
-            const { data } = await apiClient.get('/business/stats');
-            set({
-                stats: data?.data || {
-                    totalInvested: 0,
-                    totalSold: 0,
-                    netProfit: 0,
-                    inventoryValue: 0,
-                    profitByMonth: {},
-                },
-            });
-        } catch (error) {
-            console.error('Error fetching business stats:', error);
-        }
-    },
-}));
+        fetchStats: async () => {
+            try {
+                const { data } = await apiClient.get('/business/stats');
+                set({
+                    stats: data?.data || {
+                        totalInvested: 0,
+                        totalSold: 0,
+                        netProfit: 0,
+                        inventoryValue: 0,
+                        profitByMonth: {},
+                    },
+                });
+            } catch (error) {
+                console.error('Error fetching business stats:', error);
+            }
+        },
+    }),
+    {
+        name: 'business-store',
+        partialize: (state) => ({ isBusinessModeActive: state.isBusinessModeActive }),
+    }
+));

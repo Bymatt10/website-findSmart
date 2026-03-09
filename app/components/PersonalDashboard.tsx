@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { TrendingUp, TrendingDown, Plus, LayoutGrid, Target, MessageCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Plus, LayoutGrid, Target, MessageCircle, FileText } from 'lucide-react';
 import { TransactionCard } from './TransactionCard';
 import { useAuthStore } from '../stores/auth.store';
 import { useDashboardStore } from '../stores/dashboard.store';
@@ -14,17 +14,23 @@ export function PersonalDashboard({ onAddTransaction }: { onAddTransaction: () =
     const { currentRate, fetchRate } = useCurrencyStore();
     const [currencyDisplay, setCurrencyDisplay] = useState<'NIO' | 'USD'>('NIO');
 
+    const [currentMonthSelection, setCurrentMonthSelection] = useState<string>(() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    });
+
     useEffect(() => {
-        fetchDashboardData();
+        const [yearStr, monthStr] = currentMonthSelection.split('-');
+        fetchDashboardData(parseInt(monthStr), parseInt(yearStr));
         fetchGoals();
         if (!currentRate) fetchRate();
-    }, []);
+    }, [currentMonthSelection]);
 
     const activeGoals = goals.filter((g) => g.status === 'active');
 
     const formatAmount = (amount: number) => {
-        if (currencyDisplay === 'USD' && currentRate) return (amount / currentRate).toFixed(2);
-        return amount.toFixed(2);
+        if (currencyDisplay === 'USD' && currentRate) return (amount / currentRate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
     const name = user?.user_metadata?.name || 'Usuario';
@@ -83,10 +89,29 @@ export function PersonalDashboard({ onAddTransaction }: { onAddTransaction: () =
             </div>
 
             <div className="flex-1 overflow-y-auto pb-24">
+                {/* Month Filter */}
+                <div className="px-6 mt-6 mb-2">
+                    <select
+                        value={currentMonthSelection}
+                        onChange={(e) => setCurrentMonthSelection(e.target.value)}
+                        className="bg-transparent text-white text-sm font-bold focus:outline-none focus:border-indigo-500 appearance-none drop-shadow-sm custom-select tracking-wide"
+                    >
+                        {Array.from({ length: 12 }, (_, i) => {
+                            const d = new Date();
+                            d.setMonth(d.getMonth() - i);
+                            const y = d.getFullYear();
+                            const m = String(d.getMonth() + 1).padStart(2, '0');
+                            const label = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(d);
+                            return <option key={`${y}-${m}`} value={`${y}-${m}`} className="bg-zinc-900 text-white">{label.charAt(0).toUpperCase() + label.slice(1)}</option>;
+                        })}
+                    </select>
+                </div>
+
                 {/* Quick Actions */}
                 <div className="flex justify-between mx-6 mt-8 mb-8">
                     {[
                         { label: 'Registrar', Icon: Plus, to: '#', onClick: onAddTransaction },
+                        { label: 'Subir PDF', Icon: FileText, to: '/estado-cuenta' },
                         { label: 'Categorías', Icon: LayoutGrid, to: '/perfil' },
                         { label: 'Metas', Icon: Target, to: '/goals' },
                         { label: 'Chat IA', Icon: MessageCircle, to: '/chat' },
@@ -129,7 +154,7 @@ export function PersonalDashboard({ onAddTransaction }: { onAddTransaction: () =
                                         </div>
                                         <p className="text-zinc-900 dark:text-white text-[15px] font-bold mb-1 truncate">{goal.title}</p>
                                         <p className="text-zinc-500 text-[10px] mb-3">
-                                            Meta: {currSymbol}{Number(goal.target_amount).toLocaleString()}
+                                            Meta: {currSymbol}{Number(goal.target_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </p>
                                         <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1">
                                             <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${progress}%` }} />

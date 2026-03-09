@@ -9,7 +9,7 @@ export default function AsistentePage() {
     useEffect(() => { fetchInsightsDashboard(); }, []);
 
     const formatCurrency = (amount: number, currency: string) => {
-        return `${currency === 'USD' ? '$' : 'C$'}${Math.abs(amount).toFixed(2)}`;
+        return `${currency === 'USD' ? '$' : 'C$'}${Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
     return (

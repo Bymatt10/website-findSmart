@@ -180,7 +180,7 @@ export default function PerfilPage() {
                                                     <p className="text-white font-bold text-sm truncate">{w.name}</p>
                                                     <p className="text-zinc-500 text-xs capitalize">{w.type === 'debit' ? 'Débito' : w.type === 'savings' ? 'Ahorros' : w.type === 'credit_card' ? 'Crédito' : 'Efectivo'}</p>
                                                 </div>
-                                                <p className={`font-black text-sm mr-3 ${w.type === 'credit_card' && Number(w.balance) > 0 ? 'text-red-400' : 'text-white'}`}>{w.currency === 'USD' ? '$' : 'C$'}{Number(w.balance).toFixed(2)}</p>
+                                                <p className={`font-black text-sm mr-3 ${w.type === 'credit_card' && Number(w.balance) > 0 ? 'text-red-400' : 'text-white'}`}>{w.currency === 'USD' ? '$' : 'C$'}{Number(w.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                                 <div className="flex flex-col gap-1">
                                                     <button onClick={() => { setEditingWalletId(w.id); setWalletName(w.name); setWalletType(w.type); setWalletCurrency(w.currency as any); setWalletBalance(w.balance.toString()); setBankName(w.bank_name || 'Otro'); setIsAddingWallet(true); }} className="p-1"><Pencil size={13} className="text-zinc-500" /></button>
                                                     <button onClick={() => { if (confirm(`¿Eliminar "${w.name}"?`)) deleteWallet(w.id); }} className="p-1"><Trash2 size={13} className="text-red-400/60" /></button>

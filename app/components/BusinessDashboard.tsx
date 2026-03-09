@@ -37,7 +37,7 @@ export function BusinessDashboard({ onAddProduct }: { onAddProduct: () => void }
                         </div>
                         <p className="text-zinc-400 text-[10px] uppercase font-bold mb-1">Ganancia Neta</p>
                         <p className="text-white text-lg font-black tracking-tighter">
-                            C${stats.netProfit.toFixed(2)}
+                            C${stats.netProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                     </div>
                     <div className="bg-indigo-900/30 border border-indigo-900/50 p-4 rounded-3xl">
@@ -46,7 +46,7 @@ export function BusinessDashboard({ onAddProduct }: { onAddProduct: () => void }
                         </div>
                         <p className="text-zinc-400 text-[10px] uppercase font-bold mb-1">Inventario Actual</p>
                         <p className="text-white text-lg font-black tracking-tighter">
-                            C${stats.inventoryValue.toFixed(2)}
+                            C${stats.inventoryValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                     </div>
                 </div>
@@ -64,7 +64,7 @@ export function BusinessDashboard({ onAddProduct }: { onAddProduct: () => void }
                                     <Tooltip
                                         contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }}
                                         labelStyle={{ color: '#a1a1aa' }}
-                                        formatter={(v: any) => [`C$${Number(v).toFixed(0)}`, 'Ganancia']}
+                                        formatter={(v: any) => [`C$${Number(v).toLocaleString('en-US')}`, 'Ganancia']}
                                     />
                                     <Bar dataKey="profit" fill="#34d399" radius={[6, 6, 0, 0]} />
                                 </BarChart>
@@ -105,11 +105,11 @@ export function BusinessDashboard({ onAddProduct }: { onAddProduct: () => void }
                                     </div>
                                     <div className="flex justify-between mt-2">
                                         <span className="text-zinc-400 font-medium text-xs">
-                                            Inv: {currencyStr}{totalInvested.toFixed(0)}
+                                            Inv: {currencyStr}{totalInvested.toLocaleString('en-US')}
                                         </span>
                                         {t.status === 'sold' && (
                                             <span className="text-emerald-400 font-bold text-xs">
-                                                Ganancia: +{currencyStr}{Number(t.profit).toFixed(0)}
+                                                Ganancia: +{currencyStr}{Number(t.profit).toLocaleString('en-US')}
                                             </span>
                                         )}
                                     </div>

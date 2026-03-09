@@ -7,7 +7,7 @@ import { useCategoriesStore } from '../stores/categories.store';
 import { useWalletsStore } from '../stores/wallets.store';
 import { useCurrencyStore } from '../stores/currency.store';
 import { apiClient } from '../services/api';
-import { X, CreditCard, Landmark } from 'lucide-react';
+import { X, CreditCard, Landmark, Plus } from 'lucide-react';
 
 // ─────────── Add Transaction Modal ───────────
 function AddTransactionModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
@@ -37,7 +37,9 @@ function AddTransactionModal({ onClose, onSuccess }: { onClose: () => void; onSu
     setError('');
     setLoading(true);
     try {
-      const finalAmount = isExpense ? -Math.abs(Number(amount)) : Math.abs(Number(amount));
+      // Reemplaza comas por puntos para que Number() lo lea bien
+      const parsedAmount = Number(amount.replace(',', '.'));
+      const finalAmount = isExpense ? -Math.abs(parsedAmount) : Math.abs(parsedAmount);
       await apiClient.post('/transactions', {
         amount: finalAmount,
         original_currency: currency,
@@ -96,9 +98,8 @@ function AddTransactionModal({ onClose, onSuccess }: { onClose: () => void; onSu
               <span className="text-zinc-500 text-[9px]">TAPEAR</span>
             </button>
             <input
-              type="number"
-              step="0.01"
-              min="0"
+              type="text"
+              inputMode="decimal"
               required
               autoFocus
               placeholder="0.00"
@@ -108,10 +109,10 @@ function AddTransactionModal({ onClose, onSuccess }: { onClose: () => void; onSu
             />
           </div>
 
-          {currentRate && amount && (
+          {currentRate && amount && !isNaN(Number(amount.replace(',', '.'))) && (
             <p className="text-zinc-500 text-sm">
               ~ {currency === 'USD' ? 'C$' : '$'}
-              {currency === 'USD' ? (Number(amount) * currentRate).toFixed(2) : (Number(amount) / currentRate).toFixed(2)}
+              {currency === 'USD' ? (Number(amount.replace(',', '.')) * currentRate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(amount.replace(',', '.')) / currentRate).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               <span className="text-zinc-700 ml-2">(Tasa BCN: {currentRate})</span>
             </p>
           )}
@@ -196,9 +197,181 @@ function AddTransactionModal({ onClose, onSuccess }: { onClose: () => void; onSu
   );
 }
 
+// ─────────── Add Business Product Modal ───────────
+function AddBusinessProductModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [productName, setProductName] = useState('');
+  const [currency, setCurrency] = useState<'NIO' | 'USD'>('NIO');
+  const [buyCost, setBuyCost] = useState('');
+  const [extraCostsList, setExtraCostsList] = useState<{ amount: string; detail: string }[]>([
+    { amount: '', detail: '' }
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!productName || !buyCost) { setError('Ingresa el nombre y el costo.'); return; }
+    setError('');
+    setLoading(true);
+    try {
+      const parsedBuyCost = Number(buyCost.replace(',', '.'));
+      
+      let totalExtraCosts = 0;
+      let combinedDetails: string[] = [];
+
+      extraCostsList.forEach((item) => {
+        const amt = item.amount ? Number(item.amount.replace(',', '.')) : 0;
+        if (amt > 0) {
+          totalExtraCosts += amt;
+          const label = item.detail.trim() || 'Costo Extra';
+          combinedDetails.push(`${label} (${amt})`);
+        }
+      });
+
+      await apiClient.post('/business', {
+        product_name: productName,
+        buy_cost: parsedBuyCost,
+        extra_costs: totalExtraCosts,
+        extra_costs_detail: combinedDetails.length > 0 ? combinedDetails.join(', ') : '',
+        status: 'bought',
+        currency,
+        buy_date: new Date().toISOString(),
+      });
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error guardando producto.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 lg:items-center" onClick={onClose}>
+      <div
+        className="bg-zinc-900 rounded-t-3xl lg:rounded-3xl p-6 w-full max-w-lg border-t border-zinc-800 lg:border max-w-screen-sm overflow-y-auto max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-white text-xl font-bold">Registrar Compra / Producto</h2>
+          <button onClick={onClose} className="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center hover:bg-zinc-700 transition-colors">
+            <X size={18} className="text-zinc-400" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSave} className="space-y-5">
+          {/* Amount */}
+          <div className="flex gap-3 items-center">
+            <button
+              type="button"
+              onClick={() => setCurrency(currency === 'NIO' ? 'USD' : 'NIO')}
+              className="bg-zinc-800 h-14 w-16 rounded-xl flex flex-col items-center justify-center border border-zinc-700 hover:bg-zinc-700 transition-colors flex-shrink-0"
+            >
+              <span className="text-white text-lg font-bold">{currency === 'USD' ? '$' : 'C$'}</span>
+              <span className="text-zinc-500 text-[9px]">TAPEAR</span>
+            </button>
+            <input
+              type="text"
+              inputMode="decimal"
+              required
+              autoFocus
+              placeholder="0.00"
+              value={buyCost}
+              onChange={(e) => setBuyCost(e.target.value)}
+              className="flex-1 h-14 bg-transparent text-4xl font-black focus:outline-none text-emerald-400 placeholder-zinc-700"
+            />
+          </div>
+
+          {/* Product Name */}
+          <div>
+            <label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider block mb-2">Nombre del Producto</label>
+            <input
+              required
+              className="w-full h-12 bg-zinc-950 rounded-xl px-4 text-white border border-zinc-800 focus:border-indigo-500 focus:outline-none placeholder-zinc-600 transition-colors"
+              placeholder="Ej. Zapatos Nike Talla 40"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+            />
+          </div>
+
+          {/* Extra Costs */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider block">Costos Extra (Opcional)</label>
+              <button 
+                type="button" 
+                onClick={() => setExtraCostsList([...extraCostsList, { amount: '', detail: '' }])}
+                className="text-indigo-400 hover:text-indigo-300 text-xs font-bold flex items-center gap-1 transition-colors"
+              >
+                <Plus size={14} /> Agregar Gasto
+              </button>
+            </div>
+
+            {extraCostsList.map((cost, idx) => (
+              <div key={idx} className="flex gap-3 relative">
+                <div className="flex-1">
+                  {idx === 0 && <label className="text-zinc-600 text-[10px] font-bold uppercase block mb-1">Monto</label>}
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="w-full h-11 bg-zinc-950 rounded-xl px-4 text-white border border-zinc-800 focus:border-indigo-500 focus:outline-none placeholder-zinc-600 transition-colors"
+                    placeholder="0.00"
+                    value={cost.amount}
+                    onChange={(e) => {
+                      const newList = [...extraCostsList];
+                      newList[idx].amount = e.target.value;
+                      setExtraCostsList(newList);
+                    }}
+                  />
+                </div>
+                <div className="flex-[2] relative">
+                  {idx === 0 && <label className="text-zinc-600 text-[10px] font-bold uppercase block mb-1">Detalle</label>}
+                  <input
+                    className={`w-full h-11 bg-zinc-950 rounded-xl px-4 text-white border border-zinc-800 focus:border-indigo-500 focus:outline-none placeholder-zinc-600 transition-colors ${extraCostsList.length > 1 ? 'pr-10' : ''}`}
+                    placeholder="Ej. Envío, aduana..."
+                    value={cost.detail}
+                    onChange={(e) => {
+                      const newList = [...extraCostsList];
+                      newList[idx].detail = e.target.value;
+                      setExtraCostsList(newList);
+                    }}
+                  />
+                  {extraCostsList.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newList = [...extraCostsList];
+                        newList.splice(idx, 1);
+                        setExtraCostsList(newList);
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-red-400 transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-14 bg-indigo-600 rounded-xl text-white font-bold text-lg hover:bg-indigo-500 transition-colors disabled:opacity-60 flex items-center justify-center mt-2"
+          >
+            {loading ? <span className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Guardar Producto'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─────────── Home Page ───────────
 export default function HomePage() {
-  const { isBusinessModeActive } = useBusinessStore();
+  const { isBusinessModeActive, fetchAll, fetchStats } = useBusinessStore();
   const { fetchDashboardData } = useDashboardStore();
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -208,6 +381,13 @@ export default function HomePage() {
         ? <BusinessDashboard onAddProduct={() => setShowAddModal(true)} />
         : <PersonalDashboard onAddTransaction={() => setShowAddModal(true)} />
       }
+
+      {showAddModal && isBusinessModeActive && (
+        <AddBusinessProductModal
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => { fetchAll(); fetchStats(); }}
+        />
+      )}
 
       {showAddModal && !isBusinessModeActive && (
         <AddTransactionModal

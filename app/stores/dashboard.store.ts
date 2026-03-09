@@ -26,7 +26,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
             if (year) params['year'] = year;
 
             const [transactionsRes, summaryRes] = await Promise.all([
-                apiClient.get('/transactions', { params: { limit: 5 } }),
+                apiClient.get('/transactions', { params: { ...params, limit: 5 } }),
                 apiClient.get('/transactions/summary', { params }),
             ]);
 

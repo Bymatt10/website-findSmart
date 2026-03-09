@@ -19,5 +19,6 @@ export default [
         route('chat', 'routes/chat.tsx'),
         route('perfil', 'routes/perfil.tsx'),
         route('transactions', 'routes/transactions.tsx'),
+        route('estado-cuenta', 'routes/estado-cuenta.tsx'),
     ]),
 ] satisfies RouteConfig;

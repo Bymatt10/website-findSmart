@@ -52,7 +52,7 @@ export function TransactionCard({ transaction, onEdit, onDelete }: TransactionCa
             {/* Amount & actions */}
             <div className="flex flex-col items-end ml-2">
                 <span className={`font-bold text-[15px] ${isExpense ? 'text-zinc-900 dark:text-white' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                    {isExpense ? '-' : '+'}{currSymbol}{Math.abs(transaction.amount).toFixed(2)}
+                    {isExpense ? '-' : '+'}{currSymbol}{Math.abs(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <div className="flex items-center gap-1 mt-1.5">
                     <span className="text-zinc-600 text-[10px] mr-1">{transaction.date}</span>
