@@ -8,9 +8,8 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 FROM node:20-alpine AS production
 WORKDIR /app
-COPY --from=build /app/build ./build
-COPY --from=build /app/node_modules ./node_modules
-COPY package*.json ./
+COPY --from=build /app/build/client ./build/client
+RUN npm install -g serve
 ENV PORT=8000
 EXPOSE 8000
-CMD ["npm", "run", "start"]
+CMD ["serve", "-s", "build/client", "-l", "8000"]
